@@ -7,17 +7,21 @@
             background-color: #1e1e1e;
             color: #ffffff;
             font-family: Arial, sans-serif;
+            padding: 0px;
+            margin: 0px;
         }
 
         form {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 100px;
+            gap: 20px;
         }
 
         input[type="file"],
         input[type="text"],
+        input[type="email"],
+        input[type="tel"],
         input[type="submit"] {
             padding: 10px;
             margin-bottom: 10px;
@@ -33,24 +37,99 @@
             color: #ffffff;
             cursor: pointer;
         }
+
+        input[type="submit"]:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        button {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #ffffff;
+            font-size: 16px;
+        }
     </style>
+    <script>
+        function showAlert(message, isSuccess) {
+            let alertBox = document.createElement('div');
+            alertBox.textContent = message;
+            alertBox.style.display = 'block';
+            alertBox.style.padding = '20px';
+            alertBox.style.color = 'white';
+            alertBox.style.position = 'fixed';
+            alertBox.style.top = '20px';
+            alertBox.style.right = '20px';
+            alertBox.style.borderRadius = '5px';
+            alertBox.style.backgroundColor = isSuccess ? 'green' : 'red';
+            document.getElementById('alertContainer').appendChild(alertBox);
+            setTimeout(function () {
+                alertBox.style.display = 'none';
+            }, 3000);
+        }
+
+        function validateFile(type) {
+            var fileInput = document.getElementById(type + '_marksheet');
+            var marksInput = document.getElementById(type + '_marks');
+            var formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('marks', marksInput.value);
+            fetch('/validate_file', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    showAlert(data.message, data.success);
+                    if (data.success) {
+                        if (type === '10th') {
+                            document.getElementById('check12th').disabled = false;
+                        } else {
+                            document.getElementById('submitButton').disabled = false;
+                        }
+                    }
+                });
+        }
+            window.onload = function() {
+            localStorage.removeItem('10thValid');
+            localStorage.removeItem('12thValid');
+            document.getElementById('check12th').disabled = true;
+            document.getElementById('submitButton').disabled = true;
+        };
+
+    </script>
 </head>
 
 <body>
+    <div id="alertContainer"
+        style="padding: 20px; color: white; position: fixed; top: 20px; right: 20px; border-radius: 5px;">
+    </div>
+    
+    <h1 style="text-align: center ; padding:30px; color: #ffffff; background-color: #007bff;">Job Application Form</h1>
     <form action="/" method="post" enctype="multipart/form-data">
-        <input type="file" name="image" accept="image/*">
-        <input type="text" name="marks">
-        <input type="submit">
+        <div style="display: flex; gap: 30px; "> 
+            <input type="text" name="first_name" placeholder="First Name" required>
+            <input type="text" name="last_name" placeholder="Last Name" required>
+        </div>
+        <div style="display: flex; gap: 30px; "> 
+            <input type="email" name="email" placeholder="Email ID" required>
+            <input type="tel" name="mobile" placeholder="Mobile Number" pattern="[0-9]{10}" required>
+        </div>
+        <div style="display: flex; gap: 30px; "> 
+            <input type="text" name="10th_marks" id="10th_marks" placeholder="10th Marks" required>
+            <input type="file" name="10th_marksheet" id="10th_marksheet" accept="image/*" required>
+            <button type="button" id="check10th" onclick="validateFile('10th')">Check</button>
+        </div>
+        <div style="display: flex; gap: 30px; "> 
+            <input type="text" name="12th_marks" id="12th_marks" placeholder="12th Marks" required>
+            <input type="file" name="12th_marksheet" id="12th_marksheet" accept="image/*" required>
+            <button type="button" id="check12th" onclick="validateFile('12th')">Check</button>
+        </div>
+        <br>
+        <input type="submit" id="submitButton" value="Submit Application" {% if not comparison_result %}disabled{% endif %}>
     </form>
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    <ul class=flashes>
-        {% for message in messages %}
-        <li>{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-    {% endwith %}
 </body>
 
 </html>
