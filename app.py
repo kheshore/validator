@@ -49,7 +49,6 @@ def upload_file():
         extracted_tenth_marks = pytesseract.image_to_string(tenth_img_crop)
         extracted_twelfth_marks = pytesseract.image_to_string(twelfth_img_crop)
 
-        # Compare marks and matches here
         if int(tenth_marks) == int(extracted_tenth_marks):
             messages.append(('10th marks are correct!', 'success'))
             comparison_result = True
@@ -75,12 +74,12 @@ def upload_file():
         })
     if (request.method == 'POST'):
         return redirect(url_for('success'))
-
     return render_template('index.html', messages=messages, comparison_result=comparison_result)
 
 @app.route('/success', methods=['GET'])
 def success():
-    return render_template('success.html')
+    marks_below_expectation = session.get('marks_below_expectation', False)
+    return render_template('success.html', marks_below_expectation=marks_below_expectation)
 
 @app.route('/validate_file', methods=['POST'])
 def validate_file():
@@ -94,10 +93,14 @@ def validate_file():
     roi = [(710, 1146), (810, 1204)]
     img_crop = img[roi[0][1]:roi[1][1], roi[0][0]:roi[1][0]]
     extracted_marks = pytesseract.image_to_string(img_crop)
-    if int(marks) == int(extracted_marks):
-        return jsonify({'message': 'Marks are correct!', 'success': True})
+    
+    if int(marks) < 420:
+        return jsonify({'message': 'Marks are below expectation', 'success': False})
     else:
-        return jsonify({'message': 'Marks are incorrect!', 'success': False})
+        if int(marks) == int(extracted_marks):
+            return jsonify({'message': 'Marks are correct!', 'success': True})
+        else:
+            return jsonify({'message': 'Marks are incorrect!', 'success': False})
 
 if __name__ == '__main__':
     app.run(debug=True)

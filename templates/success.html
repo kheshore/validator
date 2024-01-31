@@ -4,19 +4,40 @@
 <head>
     <!-- Include the same styles as your main page -->
     <style>
+        body::after {
+            content: "";
+            background: url("/static/images/bg/index.jpg");
+            opacity: 0.6;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            position: absolute;
+            z-index: -1;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
         body {
             background-color: #1e1e1e;
             color: #ffffff;
             font-family: Arial, sans-serif;
             padding: 0px;
             margin: 0px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
     </style>
 </head>
 
 <body>
-    <h1 style="text-align: center ; padding:30px; color: #ffffff; background-color: #007bff;">Job Application Form</h1>
-    <h2 style="text-align: center ; padding:30px; color: #ffffff; ">Application submitted successfully</h2>
+    <h1 style="text-align: center ; margin: 0px; padding:30px; color: #ffffff; background-color: #409fbf;">Job
+        Application Form</h1>
+    <div id="box">    
+        <h2 style="text-align: center ; padding-top:30px; color: #ffffff; ">Application submitted successfully</h2>
+        <h4 style="text-align: center ;  color: #ffffff; ">Our Team Will Get Back To You Soon</h4>
+    </div>
 </body>
 
 </html>
