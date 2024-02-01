@@ -21,8 +21,8 @@
             background-color: #1e1e1e;
             color: #ffffff;
             font-family: Arial, sans-serif;
-            padding: 0px;
-            margin: 0px;
+            padding: 0;
+            margin: 0;
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -90,16 +90,9 @@
     </style>
     <script>
         function showAlert(message, isSuccess) {
-            let alertBox = document.createElement('div');
+            const alertBox = document.createElement('div');
             alertBox.textContent = message;
-            alertBox.style.display = 'block';
-            alertBox.style.padding = '20px';
-            alertBox.style.color = 'white';
-            alertBox.style.position = 'fixed';
-            alertBox.style.top = '20px';
-            alertBox.style.right = '20px';
-            alertBox.style.borderRadius = '5px';
-            alertBox.style.backgroundColor = isSuccess ? 'green' : 'red';
+            alertBox.style.cssText = 'display: block; padding: 20px; color: white; position: fixed; top: 20px; right: 20px; border-radius: 5px; background-color: ' + (isSuccess ? 'green' : 'red');
             document.getElementById('alertContainer').appendChild(alertBox);
             setTimeout(function () {
                 alertBox.style.display = 'none';
@@ -107,10 +100,10 @@
         }
 
         function validateFile(type) {
-            var fileInput = document.getElementById(type + '_marksheet');
-            var marksInput = document.getElementById(type + '_marks');
-            var checkButton = document.getElementById('check' + type);
-            var formData = new FormData();
+            const fileInput = document.getElementById(type + '_marksheet');
+            const marksInput = document.getElementById(type + '_marks');
+            const checkButton = document.getElementById('check' + type);
+            const formData = new FormData();
             formData.append('file', fileInput.files[0]);
             formData.append('marks', marksInput.value);
             fetch('/validate_file', {
@@ -120,15 +113,13 @@
                 .then(response => response.json())
                 .then(data => {
                     showAlert(data.message, data.success);
+                    checkButton.style.backgroundColor = data.success ? 'green' : 'red';
                     if (data.success) {
-                        checkButton.style.backgroundColor = 'green';
                         if (type === '10th') {
                             document.getElementById('check12th').disabled = false;
                         } else {
                             document.getElementById('submitButton').disabled = false;
                         }
-                    } else {
-                        checkButton.style.backgroundColor = 'red';
                     }
                 });
         }
@@ -147,69 +138,56 @@
         style="padding: 20px; color: white; position: fixed; top: 20px; right: 20px; border-radius: 5px;">
     </div>
 
-    <h1 style="text-align: center ; margin: 0px; padding:30px; color: #ffffff; background-color: #409fbf;">Job
+    <h1 style="text-align: center; margin: 0; padding: 30px; color: #ffffff; background-color: #409fbf;">Job
         Application Form</h1>
     <div id="box">
-        <form action="/" method="post" enctype="multipart/form-data">
+        <form action="/upload" method="post" enctype="multipart/form-data">
             <div>
-                <div style="display: flex; flex-direction: column; gap:8px">
-                    <div style="display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; ">
+                <div style="display: flex; flex-direction: column; gap: 8px">
+                    <div style="display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between;">
                         <label for="first_name" style="color: white;">First Name:</label>
-                        <input type="text" name="first_name" id="first_name" placeholder="First Name"
-                            style="width: 82%;" required>
+                        <input type="text" name="first_name" id="first_name" placeholder="First Name" style="width: 82%;" required>
                     </div>
-                    <div style="display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; ">
-
+                    <div style="display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between;">
                         <label for="last_name" style="color: white;">Last Name:</label>
-                        <input type="text" style="width: 82%;" name="last_name" id="last_name" placeholder="Last Name"
-                            required>
+                        <input type="text" style="width: 82%;" name="last_name" id="last_name" placeholder="Last Name" required>
                     </div>
-                    <div style="display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; ">
-
+                    <div style="display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between;">
                         <label for="email" style="color: white;">Email ID:</label>
                         <input type="email" style="width: 82%;" name="email" id="email" placeholder="Email ID" required>
                     </div>
-                    <div style="display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; ">
-
+                    <div style="display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between;">
                         <label for="mobile" style="color: white;">Mobile No:</label>
-                        <input type="tel" style="width: 82%;" name="mobile" id="mobile" placeholder="Mobile Number"
-                            pattern="[0-9]{10}" required>
+                        <input type="tel" style="width: 82%;" name="mobile" id="mobile" placeholder="Mobile Number" pattern="[0-9]{10}" required>
                     </div>
                 </div>
                 <hr>
                 <div style="display: flex; justify-content: space-between;">
-                    <div style="display: flex; flex-direction: column; gap: 5px; width: 48.5%; ">
-                        <div
-                            style="display: flex; margin-top: 8px; align-items: center; flex-wrap: wrap; justify-content: space-between; ">
+                    <div style="display: flex; flex-direction: column; gap: 5px; width: 48.5%;">
+                        <div style="display: flex; margin-top: 8px; align-items: center; flex-wrap: wrap; justify-content: space-between;">
                             <label for="10th_marks" style="color: white;">10th Marks:</label>
                             <input type="text" name="10th_marks" id="10th_marks" placeholder="10th Marks" required>
                         </div>
                         <div style="display: flex; justify-content: space-around;">
-                            <input type="file" name="10th_marksheet" id="10th_marksheet" style="width: 70%;"
-                                accept="image/*" required>
-                            <button type="button" id="check10th" style="margin-bottom: 0px;"
-                                onclick="validateFile('10th')">Check</button>
+                            <input type="file" name="10th_marksheet" id="10th_marksheet" style="width: 70%;" accept="image/*" required>
+                            <button type="button" id="check10th" style="margin-bottom: 0;" onclick="validateFile('10th')">Check</button>
                         </div>
                     </div>
                     <hr>
-                    <div style="display: flex; flex-direction: column; gap: 5px; width: 48%; ">
-                        <div
-                            style="display: flex; margin-top: 8px; align-items: center; flex-wrap: wrap; justify-content: space-between; ">
+                    <div style="display: flex; flex-direction: column; gap: 5px; width: 48%;">
+                        <div style="display: flex; margin-top: 8px; align-items: center; flex-wrap: wrap; justify-content: space-between;">
                             <label for="12th_marks" style="color: white;">12th Marks:</label>
                             <input type="text" name="12th_marks" id="12th_marks" placeholder="12th Marks" required>
                         </div>
                         <div style="display: flex; justify-content: space-around;">
-                            <input type="file" name="12th_marksheet" id="12th_marksheet" accept="image/*"
-                                style="width: 70%;" required>
-                            <button type="button" id="check12th" style="margin-bottom: 0;"
-                                onclick="validateFile('12th')">Check</button>
+                            <input type="file" name="12th_marksheet" id="12th_marksheet" accept="image/*" style="width: 70%;" required>
+                            <button type="button" id="check12th" style="margin-bottom: 0;" onclick="validateFile('12th')">Check</button>
                         </div>
                     </div>
                 </div>
                 <hr>
             </div>
-            <input type="submit" id="submitButton" value="Submit Application" {% if not comparison_result %}disabled{%
-                endif %}>
+            <input type="submit" id="submitButton" value="Submit Application" {% if not comparison_result %}disabled{% endif %}>
         </form>
     </div>
 </body>

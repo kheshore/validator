@@ -15,71 +15,37 @@ mongo = PyMongo(app)
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
-@app.route('/', methods=['GET', 'POST'])
-def upload_file():
-    messages = []
-    comparison_result = False
-    if request.method == 'POST':
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        email = request.form['email']
-        mobile = request.form['mobile']
-        tenth_marks = request.form['10th_marks']
-        twelfth_marks = request.form['12th_marks']
-        tenth_marksheet = request.files['10th_marksheet']
-        twelfth_marksheet = request.files['12th_marksheet']
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
 
-        # Save the uploaded files
-        tenth_filename = os.path.join(app.config['UPLOAD_FOLDER'], tenth_marksheet.filename)
-        twelfth_filename = os.path.join(app.config['UPLOAD_FOLDER'], twelfth_marksheet.filename)
-        tenth_marksheet.save(tenth_filename)
-        twelfth_marksheet.save(twelfth_filename)
-
-        # Process the images and compare the marks
-        tenth_img = cv2.imread(tenth_filename)
-        twelfth_img = cv2.imread(twelfth_filename)
-        if tenth_img is None or twelfth_img is None:
-            flash('Failed to load the images', 'error')
-            return redirect(request.url)
-
-        # Extract marks from the images
-        roi = [(710, 1146), (810, 1204)]  # example ROI coordinates
-        tenth_img_crop = tenth_img[roi[0][1]:roi[1][1], roi[0][0]:roi[1][0]]
-        twelfth_img_crop = twelfth_img[roi[0][1]:roi[1][1], roi[0][0]:roi[1][0]]
-        extracted_tenth_marks = pytesseract.image_to_string(tenth_img_crop)
-        extracted_twelfth_marks = pytesseract.image_to_string(twelfth_img_crop)
-
-        if int(tenth_marks) == int(extracted_tenth_marks):
-            messages.append(('10th marks are correct!', 'success'))
-            comparison_result = True
-        else:
-            messages.append(('10th marks are incorrect!', 'error'))
-
-        if int(twelfth_marks) == int(extracted_twelfth_marks):
-            messages.append(('12th marks are correct!', 'success'))
-            comparison_result = comparison_result and True
-        else:
-            messages.append(('12th marks are incorrect!', 'error'))
-            comparison_result = False
-
-        # Insert the form data into MongoDB
+@app.route('/upload', methods=['POST'])
+def upload_file():    
+    first_name = request.form['first_name']
+    last_name = request.form['last_name']
+    email = request.form['email']
+    mobile = request.form['mobile']
+    tenth_marks = request.form['10th_marks']
+    twelfth_marks = request.form['12th_marks']
+    
+    try:
         mongo.db.applications.insert_one({
             'first_name': first_name,
             'last_name': last_name,
             'email': email,
             'mobile': mobile,
             '10th_marks': tenth_marks,
-            '12th_marks': twelfth_marks,
-            'comparison_result': comparison_result
+            '12th_marks': twelfth_marks
         })
-    if (request.method == 'POST'):
-        return redirect(url_for('success'))
-    return render_template('index.html', messages=messages, comparison_result=comparison_result)
+        print('Data uploaded successfully!')
+    except Exception as e:
+        print(f'Failed to upload data: {str(e)}')
+
+    return redirect(url_for('success'))
 
 @app.route('/success', methods=['GET'])
 def success():
-    marks_below_expectation = session.get('marks_below_expectation', False)
-    return render_template('success.html', marks_below_expectation=marks_below_expectation)
+    return render_template('success.html')
 
 @app.route('/validate_file', methods=['POST'])
 def validate_file():
