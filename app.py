@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 app.config['UPLOAD_FOLDER'] = 'static/images'
 app.config['SECRET_KEY'] = 'secret-key'
-app.config['MONGO_URI'] = 'mongodb+srv://kheshore:qo5tKxMEJn3jK3dX@validator.vpl6fz1.mongodb.net/validator?retryWrites=true&w=majority'
+app.config['MONGO_URI'] = 'mongodb+srv://swathi:qo5tKxMEJn3jK3dX@validator.vpl6fz1.mongodb.net/validator?retryWrites=true&w=majority'
 mongo = PyMongo(app)
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -20,7 +20,7 @@ def index():
     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
-def upload_file():    
+def upload_file():
     first_name = request.form['first_name']
     last_name = request.form['last_name']
     email = request.form['email']
@@ -35,7 +35,9 @@ def upload_file():
             'email': email,
             'mobile': mobile,
             '10th_marks': tenth_marks,
-            '12th_marks': twelfth_marks
+            '10th_sheet_marks': tenth_marks,
+            '12th_marks': twelfth_marks,
+            '12th_sheet_marks':twelfth_marks
         })
         print('Data uploaded successfully!')
     except Exception as e:
@@ -51,6 +53,7 @@ def success():
 def validate_file():
     file = request.files['file']
     marks = request.form['marks']
+    mtype = request.form['type']
     filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
     file.save(filename)
     img = cv2.imread(filename)
@@ -60,13 +63,13 @@ def validate_file():
     img_crop = img[roi[0][1]:roi[1][1], roi[0][0]:roi[1][0]]
     extracted_marks = pytesseract.image_to_string(img_crop)
     
-    if int(marks) < 420:
-        return jsonify({'message': 'Marks are below expectation', 'success': False})
+    if (mtype == '10th' and int(marks) < 350) or (mtype == '12th' and int(marks) < 420):
+        return jsonify({'message': 'Marks are below expectation', 'success': False, 'extracted_marks': extracted_marks})
     else:
         if int(marks) == int(extracted_marks):
-            return jsonify({'message': 'Marks are correct!', 'success': True})
+            return jsonify({'message': 'Marks are correct!', 'success': True, 'extracted_marks': extracted_marks})
         else:
-            return jsonify({'message': 'Marks are incorrect!', 'success': False})
+            return jsonify({'message': 'Marks are incorrect!', 'success': False , 'extracted_marks': extracted_marks})
 
 if __name__ == '__main__':
     app.run(debug=True)
