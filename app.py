@@ -59,7 +59,12 @@ def validate_file():
     img = cv2.imread(filename)
     if img is None:
         return jsonify({'message': 'Failed to load the image', 'success': False})
-    roi = [(710, 1146), (810, 1204)]
+    
+    # Define different ROIs for 10th and 12th marks
+    roi_10th = [(710, 1146), (810, 1204)]
+    roi_12th = [(530, 1166), (686, 1214)]
+    roi = roi_10th if mtype == '10th' else roi_12th
+
     img_crop = img[roi[0][1]:roi[1][1], roi[0][0]:roi[1][0]]
     extracted_marks = pytesseract.image_to_string(img_crop)
     
